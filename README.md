@@ -1,3 +1,5 @@
+![example image](https://github.com/zzZIMAWAKE/gitlab-mr-status/blob/master/example.png)
+
 ### Setup
 
 * You'll need to install python-gitlab with `sudo pip install python-gitlab` or `sudo pip install -r requirements.txt`
