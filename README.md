@@ -4,7 +4,7 @@
 * The following environment variables will need to be set up, I advise adding them to your bash profile:
     * `GITLAB_AUTHOR_USERNAME` - your username on gitlab
     * `GITLAB_ACCESS_TOKEN` - your private gitlab access token - https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
-    * `GITLAB_GROUP` - the group your repositories are in e.g. `google`
+    * `GITLAB_GROUP` - the group your repositories are in, commonly your company name e.g. `google`
     * `GITLAB_APPROVAL_ACCESS` - `1` if you have gitlab Starter / Bronze tier+, `0` otherwise (without access to this endpoint approval status will not show)
 
 * Some optional extras that you can add to your bash profile:
