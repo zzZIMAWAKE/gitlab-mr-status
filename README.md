@@ -1,9 +1,6 @@
 ![example image](https://github.com/zzZIMAWAKE/gitlab-mr-status/blob/master/example.png)
 
 ### Setup
-
-* You'll need to install python-gitlab with `sudo pip install python-gitlab` or `sudo pip install -r requirements.txt`
-
 * The following environment variables will need to be set up, I advise adding them to your bash profile:
     * `GITLAB_AUTHOR_USERNAME` - your username on gitlab
     * `GITLAB_ACCESS_TOKEN` - your private gitlab access token - https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html

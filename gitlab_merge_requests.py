@@ -1,5 +1,4 @@
 import os
-import gitlab
 import requests
 
 GITLAB_GROUP = os.getenv("GITLAB_GROUP")
@@ -13,6 +12,9 @@ GITLAB_APPROVAL_ACCESS = bool(int(os.getenv("GITLAB_APPROVAL_ACCESS")))
 
 GITLAB_HOST = "https://www.gitlab.com"
 PROJECTS_URL = "{}/api/v4/projects".format(GITLAB_HOST)
+MR_URL = "{host}/api/v4/groups/{group}/merge_requests?private_token={token}&state={state}&author_username={author}"
+PIPELINES_URL = "{projects_url}/{project_id}/merge_requests/{mr_iid}/pipelines""?private_token={token}"
+APPROVALS_URL = "{projects_url}/{project_id}/merge_requests/{mr_iid}/approval_state""?private_token={token}"
 
 
 def get_request(url):
@@ -21,12 +23,14 @@ def get_request(url):
     return response.json()
 
 
-gl = gitlab.Gitlab(GITLAB_HOST, PRIVATE_TOKEN)
-gel_group = gl.groups.get(GITLAB_GROUP)
-open_merge_requests = gel_group.mergerequests.list(
+merge_requests_url = MR_URL.format(
+    host=GITLAB_HOST,
+    group=GITLAB_GROUP,
+    token=PRIVATE_TOKEN,
     state="opened",
-    author_username=GITLAB_AUTHOR_USERNAME,
+    author=GITLAB_AUTHOR_USERNAME,
 )
+open_merge_requests = get_request(merge_requests_url)
 
 if not open_merge_requests:
     print("No open merge requests.")
@@ -35,41 +39,42 @@ for merge_request in open_merge_requests:
     ready_to_merge = True
 
     print("=" * 40)
-    print(merge_request.title)
+    print(merge_request["title"])
 
-    if not merge_request.blocking_discussions_resolved:
+    if not merge_request["blocking_discussions_resolved"]:
         ready_to_merge = False
         print("*** THREADS MUST BE RESOLVED ***")
 
-    if merge_request.has_conflicts:
+    if merge_request["has_conflicts"]:
         ready_to_merge = False
         print("*** CONFLICTS EXIST ***")
 
-    if merge_request.work_in_progress:
+    if merge_request["work_in_progress"]:
         ready_to_merge = False
         print("*** WORK IN PROGRESS ***")
 
-    pipelines_url = "{}/{}/merge_requests/{}/pipelines""?private_token={}".format(
-        PROJECTS_URL,
-        merge_request.project_id,
-        merge_request.iid,
-        PRIVATE_TOKEN,
+    pipelines_url = PIPELINES_URL.format(
+        projects_url=PROJECTS_URL,
+        project_id=merge_request["project_id"],
+        mr_iid=merge_request["iid"],
+        token=PRIVATE_TOKEN,
     )
 
     pipelines = get_request(pipelines_url)
 
-    if pipelines and pipelines[0]["status"] != "passed":
+    if pipelines and pipelines[0]["status"] != "success":
         ready_to_merge = False
         print("*** PIPELINE STATUS: {} ***".format(pipelines[0]["status"].upper()))
         print("PIPELINE URL: {}".format(pipelines[0]["web_url"]))
 
     if GITLAB_APPROVAL_ACCESS:
-        approvals_url = "{}/{}/merge_requests/{}/approval_state""?private_token={}".format(
-            PROJECTS_URL,
-            merge_request.project_id,
-            merge_request.iid,
-            PRIVATE_TOKEN,
+        approvals_url = APPROVALS_URL.format(
+            projects_url=PROJECTS_URL,
+            project_id=merge_request["project_id"],
+            mr_iid=merge_request["iid"],
+            token=PRIVATE_TOKEN,
         )
+
         approvals = get_request(approvals_url)
 
         required_approvals = approvals["rules"][0]["approvals_required"]
@@ -83,6 +88,6 @@ for merge_request in open_merge_requests:
     if ready_to_merge:
         print("*** READY TO MERGE ***")
 
-    print("URL: {}".format(merge_request.web_url))
+    print("URL: {}".format(merge_request["web_url"]))
 
 print("=" * 40)
