@@ -13,4 +13,7 @@
     * `listmerge` - runs the above alias as soon as a terminal session is started
 
 ### Usage
-    python gitlab_merge_requests.py
+
+Run directly: `python gitlab_merge_requests.py`
+
+If you added the above alias: `listmerge`
